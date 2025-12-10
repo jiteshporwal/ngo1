@@ -18,7 +18,9 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // disable for API testing (enable later for browser forms)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/signup", "/api/auth/**").permitAll()
+                        .requestMatchers("/api/users/signup", "/api/auth/**" , "/api/donations/create").permitAll()
+                        .requestMatchers("/**").permitAll()
+
                         .anyRequest().authenticated()
                 )
                 // do not enable form login or HTTP basic by default (optional)
@@ -32,3 +34,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
+

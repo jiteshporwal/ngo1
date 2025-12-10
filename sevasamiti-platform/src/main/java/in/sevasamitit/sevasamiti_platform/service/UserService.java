@@ -19,7 +19,8 @@ public class UserService {
     }
 
     @Transactional
-    public void registerNewUser(SignupRequest req) {
+    // snippet in your UserService (change signature and return)
+    public Users registerNewUser(SignupRequest req) {
         if (userRepository.existsByEmail(req.getEmail())) {
             throw new IllegalArgumentException("Email already in use");
         }
@@ -33,7 +34,8 @@ public class UserService {
         u.setPhone(req.getPhone());
         String hash = passwordEncoder.encode(req.getPassword());
         u.setPasswordHash(hash);
-        // other defaults (role, verified flags) will be DB defaults
-        userRepository.save(u);
+
+        // save and return the saved entity
+        return userRepository.save(u);
     }
 }

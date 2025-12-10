@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class Users {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)  // auto-increment
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long userId;
 
@@ -41,7 +41,7 @@ public class Users {
     private String profilePicture;
 
     @Column(length = 50)
-    private String role = "guest";
+    private String role = "guest";   // guest, user, community, admin
 
     @Column(name = "blue_tick")
     private Boolean blueTick = Boolean.FALSE;
@@ -52,10 +52,19 @@ public class Users {
     @Column(name = "verified_phone")
     private Boolean verifiedPhone = Boolean.FALSE;
 
-    // these are managed by DB (INSERT/UPDATE), not JPA
+    // NEW FIELD FOR MEMBERSHIP LOGIC
+    @Column(name = "is_community_member")
+    private boolean communityMember = false;
+
+    // DB managed timestamps
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
+
+    // DonationService expects getId()
+    public Long getId() {
+        return this.userId;
+    }
 }
