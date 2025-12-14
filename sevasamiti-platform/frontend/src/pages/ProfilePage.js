@@ -12,19 +12,22 @@ const ProfilePage = () => {
 
     useEffect(() => {
         const fetchUser = async () => {
+            console.log("ProfilePage: Starting fetchUser...");
             try {
                 setLoading(true);
-                console.log("Attempting to fetch current user data..."); // Added console.log
+                setError(null); // Clear previous errors
+                console.log("ProfilePage: Calling getCurrentUser API...");
                 const currentUser = await getCurrentUser();
+                console.log("ProfilePage: Successfully fetched user data:", currentUser);
                 setUser(currentUser);
                 setProfilePicture(currentUser.profilePictureUrl || null); // Use fetched URL or null
-                // Store user data in localStorage to simulate session for UI
                 localStorage.setItem('user', JSON.stringify(currentUser)); 
             } catch (err) {
-                setError("Failed to fetch user data. Please ensure you are logged in.");
-                console.error("Error fetching user:", err);
+                console.error("ProfilePage: Error in fetchUser:", err);
+                setError(err.message || "Failed to fetch user data. Please ensure you are logged in.");
             } finally {
                 setLoading(false);
+                console.log("ProfilePage: fetchUser finished. Loading set to false.");
             }
         };
 

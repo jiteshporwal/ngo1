@@ -11,12 +11,15 @@ import in.sevasamitit.sevasamiti_platform.service.UserService;
 import in.sevasamitit.sevasamiti_platform.util.JwtTokenProvider;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank; // Add this import
-import jakarta.validation.constraints.NotNull;  // Add this import
+import jakarta.validation.constraints.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -27,6 +30,7 @@ import java.net.URI;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final JwtTokenProvider tokenProvider;
@@ -41,30 +45,39 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername(),
-                        loginRequest.getPassword()
-                )
-        );
+        logger.info("Attempting to authenticate user: {}", loginRequest.getUsername());
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(),
+                            loginRequest.getPassword()
+                    )
+            );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String jwt = tokenProvider.generateToken(authentication);
-        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
+            String jwt = tokenProvider.generateToken(authentication);
+            logger.info("User {} authenticated successfully. Returning JWT.", loginRequest.getUsername());
+            return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
+        } catch (AuthenticationException e) {
+            logger.error("Authentication failed for user {}: {}", loginRequest.getUsername(), e.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Authentication failed: " + e.getMessage()), HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+        logger.info("Attempting to register user with email: {}", signUpRequest.getEmail());
         try {
             Users result = userService.registerNewUser(signUpRequest); // Sets verifiedEmail to false by default
 
             emailService.generateAndSendOtpForUser(result.getUserId());
 
-            // Return success with user ID so frontend can use it for OTP verification
+            logger.info("User {} registered successfully. OTP sent.", signUpRequest.getEmail());
             return ResponseEntity.status(HttpStatus.CREATED).body(new SignupResponse(true, "User registered successfully. OTP sent to email. Please verify.", result.getUserId()));
 
         } catch (IllegalArgumentException ex) {
+            logger.error("Registration failed for user {}: {}", signUpRequest.getEmail(), ex.getMessage());
             return new ResponseEntity<>(new ApiResponse(false, ex.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }

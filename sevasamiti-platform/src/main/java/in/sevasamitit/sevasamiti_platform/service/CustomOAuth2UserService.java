@@ -2,6 +2,7 @@ package in.sevasamitit.sevasamiti_platform.service;
 
 import in.sevasamitit.sevasamiti_platform.entity.AuthProvider;
 import in.sevasamitit.sevasamiti_platform.entity.Users;
+import in.sevasamitit.sevasamiti_platform.exception.OAuth2AuthenticationProcessingException;
 import in.sevasamitit.sevasamiti_platform.repository.UserRepository;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -26,12 +27,16 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oAuth2User = super.loadUser(oAuth2UserRequest);
 
         String email = oAuth2User.getAttribute("email");
+        if (!StringUtils.hasText(email)) {
+            throw new OAuth2AuthenticationProcessingException("Email not found from OAuth2 provider");
+        }
+        
         Optional<Users> userOptional = userRepository.findByEmail(email);
         Users user;
         if(userOptional.isPresent()) {
             user = userOptional.get();
             if(!user.getAuthProvider().equals(AuthProvider.google)) {
-                throw new OAuth2AuthenticationException("Looks like you're signed up with " +
+                throw new OAuth2AuthenticationProcessingException("Looks like you're signed up with " +
                         user.getAuthProvider() + " account. Please use your " + user.getAuthProvider() +
                         " account to login.");
             }
@@ -47,14 +52,16 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         Users user = new Users();
 
         user.setAuthProvider(AuthProvider.google);
-        user.setUsername(oAuth2User.getAttribute("name"));
+        user.setUsername(oAuth2User.getAttribute("email")); // Use email for username to ensure uniqueness
         user.setEmail(oAuth2User.getAttribute("email"));
         user.setProfilePicture(oAuth2User.getAttribute("picture"));
+        user.setVerifiedEmail(true); // Google users are considered email-verified
         return userRepository.save(user);
     }
 
     private Users updateExistingUser(Users existingUser, OAuth2User oAuth2User) {
-        existingUser.setUsername(oAuth2User.getAttribute("name"));
+        // Do not update username, as it should be immutable (the email).
+        // Only update non-critical info like profile picture.
         existingUser.setProfilePicture(oAuth2User.getAttribute("picture"));
         return userRepository.save(existingUser);
     }

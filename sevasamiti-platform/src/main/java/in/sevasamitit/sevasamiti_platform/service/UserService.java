@@ -28,7 +28,10 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException("Username is already taken");
         }
         if (userRepository.existsByEmail(req.getEmail())) {
-            throw new IllegalArgumentException("Email already in use");
+            throw new IllegalArgumentException("Email address already in use");
+        }
+        if (userRepository.existsByPhone(req.getPhone())) {
+            throw new IllegalArgumentException("Phone number already in use");
         }
 
         Users u = new Users();

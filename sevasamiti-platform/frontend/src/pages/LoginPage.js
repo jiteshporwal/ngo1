@@ -24,9 +24,12 @@ const LoginPage = () => {
 
         login(formData)
             .then(response => {
+                console.log("Login successful! Response:", response);
                 localStorage.setItem('accessToken', response.accessToken);
+                console.log("accessToken stored. Navigating to /home...");
                 navigate('/home');
             }).catch(error => {
+                console.error("Login failed:", error);
                 setError(error.message || 'Invalid username or password. Please try again.');
                 setLoading(false);
             });

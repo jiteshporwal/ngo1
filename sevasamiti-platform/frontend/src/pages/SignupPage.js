@@ -31,6 +31,7 @@ const SignupPage = () => {
                 alert(response.message); // Show message like "OTP sent"
                 navigate('/verify-email', { state: { userId: response.userId, email: formData.email } });
             }).catch(error => {
+                console.error("Signup failed:", error);
                 setError(error.message || 'Something went wrong. Please try again.');
                 setLoading(false);
             });

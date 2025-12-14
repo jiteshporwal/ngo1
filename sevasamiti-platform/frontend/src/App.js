@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -12,32 +12,21 @@ import CommunityPage from './pages/CommunityPage';
 import HelpRequestsPage from './pages/HelpRequestsPage';
 import ShopPage from './pages/ShopPage';
 import ContactPage from './pages/ContactPage';
+import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler'; // Import the new handler
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 
 import './App.css';
 
-// ProtectedRoute component
+// Simplified ProtectedRoute component
 const ProtectedRoute = ({ children }) => {
-  const location = useLocation();
-  let isAuthenticated = localStorage.getItem('accessToken');
-
-  // If not authenticated via localStorage, check URL for token (e.g., after SSO redirect)
-  if (!isAuthenticated) {
-    const params = new URLSearchParams(location.search);
-    const token = params.get('token');
-    if (token) {
-      localStorage.setItem('accessToken', token);
-      // Clean the URL from the token parameter
-      window.history.replaceState({}, document.title, location.pathname);
-      isAuthenticated = token; // Update isAuthenticated for current render
-    }
-  }
+  const isAuthenticated = localStorage.getItem('accessToken');
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
+
   return children;
 };
 
@@ -61,6 +50,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
 
         {/* Protected Routes (with Navbar and Footer) */}
         <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
@@ -83,5 +73,3 @@ function App() {
 }
 
 export default App;
-
-
