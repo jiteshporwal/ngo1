@@ -1,0 +1,91 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f9fa; /* Light background */
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.navbar-logo {
+    height: 30px; /* Adjust as needed */
+    margin-right: 10px;
+}
+
+.navbar-nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.nav-item {
+    margin: 0 15px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #555;
+    font-size: 16px;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #007bff; /* Primary blue on hover */
+}
+
+.navbar-actions {
+    display: flex;
+    align-items: center;
+}
+
+.donate-button {
+    background-color: #28a745; /* Green */
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-right: 15px;
+    transition: background-color 0.3s ease;
+}
+
+.donate-button:hover {
+    background-color: #218838;
+}
+
+.profile-icon-fa {
+    font-size: 24px; /* Adjust size to fit */
+    color: #007bff; /* Blue color */
+    border: 2px solid #007bff; /* Blue border */
+    border-radius: 50%; /* Circular border */
+    padding: 2px; /* Small padding to separate icon from border */
+}
+
+.profile-dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.logout-text-link {
+    font-size: 14px; /* Small size */
+    color: #555; /* Default text color */
+    cursor: pointer;
+    margin: 0 10px; /* 10px left and right margin */
+    transition: color 0.3s ease;
+}
+
+.logout-text-link:hover {
+    color: #dc3545; /* Red on hover */
+}

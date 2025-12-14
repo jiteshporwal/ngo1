@@ -19,8 +19,8 @@ public class Users {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(nullable = false, length = 150)
-    private String name;
+    @Column(nullable = false, unique = true, length = 150)
+    private String username;
 
     @Column(unique = true, length = 200)
     private String email;
@@ -28,8 +28,12 @@ public class Users {
     @Column(unique = true, length = 20)
     private String phone;
 
-    @Column(name = "password_hash", length = 255)
-    private String passwordHash;
+    @Column(name = "password", length = 255)
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "auth_provider", nullable = false, length = 10)
+    private AuthProvider authProvider;
 
     @Column(length = 100)
     private String city;
@@ -62,9 +66,4 @@ public class Users {
 
     @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
-
-    // DonationService expects getId()
-    public Long getId() {
-        return this.userId;
-    }
 }

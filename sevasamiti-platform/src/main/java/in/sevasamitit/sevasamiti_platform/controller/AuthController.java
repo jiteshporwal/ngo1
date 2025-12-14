@@ -1,84 +1,137 @@
 package in.sevasamitit.sevasamiti_platform.controller;
 
+import in.sevasamitit.sevasamiti_platform.dto.ApiResponse;
+import in.sevasamitit.sevasamiti_platform.dto.JwtAuthenticationResponse;
+import in.sevasamitit.sevasamiti_platform.dto.LoginRequest;
 import in.sevasamitit.sevasamiti_platform.dto.SignupRequest;
-import in.sevasamitit.sevasamiti_platform.dto.SignupResponse;
 import in.sevasamitit.sevasamiti_platform.entity.Users;
 import in.sevasamitit.sevasamiti_platform.service.EmailService;
+import in.sevasamitit.sevasamiti_platform.service.UserPrincipal; // Add this import
 import in.sevasamitit.sevasamiti_platform.service.UserService;
+import in.sevasamitit.sevasamiti_platform.util.JwtTokenProvider;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank; // Add this import
+import jakarta.validation.constraints.NotNull;  // Add this import
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    private final AuthenticationManager authenticationManager;
     private final UserService userService;
+    private final JwtTokenProvider tokenProvider;
     private final EmailService emailService;
 
-    // inject EmailService along with UserService
-    public AuthController(UserService userService, EmailService emailService) {
+    public AuthController(AuthenticationManager authenticationManager, UserService userService, JwtTokenProvider tokenProvider, EmailService emailService) {
+        this.authenticationManager = authenticationManager;
         this.userService = userService;
+        this.tokenProvider = tokenProvider;
         this.emailService = emailService;
     }
 
-    // signup: saves user AND auto-sends OTP to user's email
+    @PostMapping("/login")
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getUsername(),
+                        loginRequest.getPassword()
+                )
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        String jwt = tokenProvider.generateToken(authentication);
+        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
+    }
+
     @PostMapping("/signup")
-    public ResponseEntity<SignupResponse> signup(@Valid @RequestBody SignupRequest request) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         try {
-            // register and get saved user
-            Users saved = userService.registerNewUser(request);
+            Users result = userService.registerNewUser(signUpRequest); // Sets verifiedEmail to false by default
 
-            // send OTP to the saved user's email (async if you want)
-            emailService.generateAndSendOtpForUser(saved.getUserId());
+            emailService.generateAndSendOtpForUser(result.getUserId());
 
-            // return success + userId so caller can reference for verify
-            SignupResponse res = new SignupResponse(true,
-                    "Signup successful. OTP sent to email. Please verify.",
-                    saved.getUserId()); // add userId in response DTO (update DTO below)
-            return ResponseEntity.ok(res);
+            // Return success with user ID so frontend can use it for OTP verification
+            return ResponseEntity.status(HttpStatus.CREATED).body(new SignupResponse(true, "User registered successfully. OTP sent to email. Please verify.", result.getUserId()));
 
         } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().body(new SignupResponse(false, ex.getMessage(), null));
-        } catch (Exception ex) {
-            return ResponseEntity.status(500).body(new SignupResponse(false, "Server error", null));
+            return new ResponseEntity<>(new ApiResponse(false, ex.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
-    // request to resend OTP (optional)
     @PostMapping("/send-otp")
-    public ResponseEntity<?> sendOtp(@RequestParam(required = false) Long userId,
-                                     @RequestBody(required = false) SendOtpRequest body) {
-        Long id = userId != null ? userId : (body != null ? body.getUserId() : null);
-        if (id == null) return ResponseEntity.badRequest().body("{\"success\":false,\"message\":\"userId required\"}");
-        emailService.generateAndSendOtpForUser(id);
-        return ResponseEntity.ok("{\"success\":true,\"message\":\"OTP sent\"}");
-    }
-
-    // verify the OTP
-    @PostMapping("/verify-otp")
-    public ResponseEntity<?> verifyOtp(@RequestBody VerifyOtpRequest req) {
+    public ResponseEntity<?> sendOtp(@RequestBody SendOtpRequest req) {
         try {
-            boolean ok = emailService.verifyOtpForUser(req.getUserId(), req.getOtp());
-            if (ok) return ResponseEntity.ok("{\"success\":true,\"message\":\"Email verified\"}");
-            else return ResponseEntity.badRequest().body("{\"success\":false,\"message\":\"Invalid OTP\"}");
+            emailService.generateAndSendOtpForUser(req.getUserId());
+            return ResponseEntity.ok(new ApiResponse(true, "OTP sent successfully."));
         } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().body("{\"success\":false,\"message\":\"" + ex.getMessage() + "\"}");
-        } catch (Exception ex) {
-            return ResponseEntity.status(500).body("{\"success\":false,\"message\":\"Server error\"}");
+            return new ResponseEntity<>(new ApiResponse(false, ex.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOtp(@Valid @RequestBody VerifyOtpRequest req) {
+        try {
+            boolean verified = emailService.verifyOtpForUser(req.getUserId(), req.getOtp());
+            if (verified) {
+                // If OTP is verified, authenticate the user and generate a JWT
+                UserPrincipal userPrincipal = (UserPrincipal) userService.loadUserById(req.getUserId());
+                Authentication authentication = new UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                String jwt = tokenProvider.generateTokenFromUsername(userPrincipal.getUsername());
+                return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
+            } else {
+                return new ResponseEntity<>(new ApiResponse(false, "Invalid OTP"), HttpStatus.BAD_REQUEST);
+            }
+        } catch (IllegalArgumentException ex) {
+            return new ResponseEntity<>(new ApiResponse(false, ex.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
+    
     // DTOs used in controller
-    public static class SendOtpRequest {
+    public static class SignupResponse {
+        private boolean success;
+        private String message;
         private Long userId;
+
+        public SignupResponse(boolean success, String message, Long userId) {
+            this.success = success;
+            this.message = message;
+            this.userId = userId;
+        }
+
+        public boolean isSuccess() { return success; }
+        public void setSuccess(boolean success) { this.success = success; }
+        public String getMessage() { return message; }
+        public void setMessage(String message) { this.message = message; }
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
+    }
+
+    public static class SendOtpRequest {
+        @NotNull
+        private Long userId;
+
         public Long getUserId() { return userId; }
         public void setUserId(Long userId) { this.userId = userId; }
     }
 
     public static class VerifyOtpRequest {
+        @NotNull
         private Long userId;
+        @NotBlank
         private String otp;
+
         public Long getUserId() { return userId; }
         public void setUserId(Long userId) { this.userId = userId; }
         public String getOtp() { return otp; }

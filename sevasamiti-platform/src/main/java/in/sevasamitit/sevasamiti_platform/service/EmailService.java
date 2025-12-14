@@ -56,7 +56,7 @@ public class EmailService {
 
         // create email (plaintext; do NOT log OTP in server logs)
         String subject = "Your verification code";
-        String body = "Hello " + user.getName() + ",\n\n"
+        String body = "Hello " + user.getUsername() + ",\n\n"
                 + "Your verification code is: " + otp + "\n\n"
                 + "It will expire in " + otpExpiryMinutes + " minutes.\n\n"
                 + "If you did not request this, ignore this message.\n\n"
