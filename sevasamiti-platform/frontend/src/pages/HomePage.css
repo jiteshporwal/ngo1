@@ -1,0 +1,60 @@
+.homepage-container {
+    padding: 20px;
+    max-width: 1200px; /* Limit overall width for better readability */
+    margin: 0 auto; /* Center the container */
+}
+
+.homepage-carousel-container {
+    max-width: 100%; /* Ensure it doesn't go out of bounds */
+    margin: 0 auto 40px auto; /* Center the carousel and add bottom margin */
+    border-radius: 8px;
+    overflow: hidden; /* Ensures rounded corners apply */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.homepage-carousel-container .carousel .slide {
+    max-height: 500px;
+    overflow: hidden;
+}
+
+.homepage-carousel-container .carousel .slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease-in-out;
+}
+
+.homepage-carousel-container .carousel .slide:hover img {
+    transform: scale(1.05);
+}
+
+/* Optional: Adjust legend position if needed */
+.homepage-carousel-container .carousel .legend {
+    font-size: 1.2em;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    margin: 0;
+}
+
+.homepage-contact-section {
+    margin-top: 60px; /* Space above contact section */
+    padding-top: 40px;
+    border-top: 1px solid #eee;
+}
+
+/* Responsive adjustments for homepage */
+@media (max-width: 768px) {
+    .homepage-container {
+        padding: 10px;
+    }
+
+    .homepage-carousel-container {
+        margin-bottom: 20px;
+    }
+}

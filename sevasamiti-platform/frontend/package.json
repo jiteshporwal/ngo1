@@ -12,8 +12,11 @@
     "@testing-library/user-event": "^13.5.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-responsive-carousel": "^3.2.23",
     "react-router-dom": "^7.10.1",
     "react-scripts": "5.0.1",
+    "svg2png": "^4.1.1",
+    "svg2png-cli": "^1.1.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

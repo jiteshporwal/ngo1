@@ -6,13 +6,10 @@ import HomePage from './pages/HomePage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import ProfilePage from './pages/ProfilePage';
 import AboutUsPage from './pages/AboutUsPage';
-import ProgramsPage from './pages/ProgramsPage';
-import EventsPage from './pages/EventsPage';
-import CommunityPage from './pages/CommunityPage';
-import HelpRequestsPage from './pages/HelpRequestsPage';
-import ShopPage from './pages/ShopPage';
 import ContactPage from './pages/ContactPage';
+import DonatePage from './pages/DonatePage'; // Import the new donate page
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler'; // Import the new handler
+
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -57,15 +54,8 @@ function App() {
           <Route path="/home" element={<HomePage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/about" element={<AboutUsPage />} />
-          <Route path="/programs" element={<ProgramsPage />} />
-          <Route path="/events" element={<EventsPage />} />
-          <Route path="/community" element={<CommunityPage />} />
-          <Route path="/help-requests" element={<HelpRequestsPage />} />
-          <Route path="/shop" element={<ShopPage />} />
           <Route path="/contact" element={<ContactPage />} />
-          {/* Also add routes for the footer links */}
-          <Route path="/terms" element={<div>Terms and Conditions Page</div>} />
-          <Route path="/privacy" element={<div>Privacy Policy Page</div>} />
+          <Route path="/donate" element={<DonatePage />} /> {/* Add donate route */}
         </Route>
       </Routes>
     </Router>

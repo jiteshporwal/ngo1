@@ -1,0 +1,53 @@
+.legal-page-container {
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+    font-family: 'Arial', sans-serif;
+    line-height: 1.7;
+    color: #444;
+}
+
+.legal-page-container h1 {
+    font-size: 2.8rem;
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.legal-page-container h2 {
+    font-size: 2rem;
+    color: #34495e;
+    border-bottom: 2px solid #16a085;
+    padding-bottom: 8px;
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+
+.legal-page-container section {
+    margin-bottom: 30px;
+}
+
+.legal-page-container p,
+.legal-page-container li {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+}
+
+.legal-page-container strong {
+    color: #2c3e50;
+}
+
+.legal-page-container ul {
+    list-style-type: disc;
+    padding-left: 30px;
+}
+
+.legal-page-container a {
+    color: #16a085;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.legal-page-container a:hover {
+    color: #1abc9c;
+}
